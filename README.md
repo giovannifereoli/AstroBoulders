@@ -53,4 +53,4 @@ This Python library offers tools for managing and modeling gravity fields around
 This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
 
 ## Acknowledgments
-The mathematical formulation underlying nearly all gravity model code has been derived from the MS thesis work of Mr. Marco Galeazzi, as detailed in "Galeazzi M., Ferrari F., Pugliatti M., & Topputo F. (2023, December 19), titled "Physics-informed neural network for gravity field modeling around the Didymos binary system." The document is accessible at https://hdl.handle.net/10589/214673.
+The mathematical formulation underlying nearly all gravity model code has been derived from the MS thesis work of Mr. Marco Galeazzi, as detailed in the manuscript by Galeazzi M., Ferrari F., Pugliatti M., & Topputo F. (2023, December 19), titled "Physics-informed neural network for gravity field modeling around the Didymos binary system." The document is accessible at https://hdl.handle.net/10589/214673.
