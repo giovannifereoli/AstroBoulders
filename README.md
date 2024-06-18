@@ -1,7 +1,7 @@
 # AstroBoulders
 
 ## Description
-AstroBoulders is an innovative project that [provide a brief description of what your project does]. It aims to [describe the main goal or functionality of the project].
+None
 
 ## Installation
 
