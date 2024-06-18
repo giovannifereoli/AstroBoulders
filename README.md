@@ -42,12 +42,6 @@ None
    python your_script.py
    ```
 
-## Usage
-Provide examples of how to use your project, with code snippets and examples:
-```sh
-python your_script.py --option value
-```
-
 ## Contributing
 1. Fork the repository.
 2. Create a new branch (`git checkout -b feature-branch`).
