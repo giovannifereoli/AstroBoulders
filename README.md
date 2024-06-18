@@ -1,7 +1,7 @@
 # AstroBoulders
 
 ## Description
-None
+This Python library offers tools for managing and modeling gravity fields around asteroids. It features capabilities for propagating trajectories and obtaining measurements such as range and range rate. Future updates will introduce a navigation pipeline with sequential filtering and machine learning algorithms for various learning and estimation tasks.
 
 ## Installation
 
