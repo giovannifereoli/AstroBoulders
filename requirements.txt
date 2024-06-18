@@ -1,0 +1,9 @@
+numpy
+spiceypy
+matplotlib
+pytest
+hypothesis
+scipy
+tqdm
+trimesh
+numba
