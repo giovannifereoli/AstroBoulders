@@ -5,7 +5,7 @@ from GravModels.utils.MeasurementModels import *
 from GravModels.utils.Plotting import plot_asteroid_3d
 from GravModels.utils.Plotting import plot_range_and_range_rate
 
-# TODO: better unit of measurement handling
+# TODO: better unit of measurement handling, asteroids seem smaller
 
 # Example usage
 if __name__ == "__main__":
@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     for i, (range_measurement, range_rate_measurement) in enumerate(measurements):
         print(
-            f"State {i}: Range = {range_measurement:.2f} meters, Range Rate = {range_rate_measurement:.2f} meters/second"
+            f"State {i}: Range = {range_measurement:.2f} km, Range Rate = {range_rate_measurement:.2f} km/sec"
         )
 
     # Plot the range and range rate
