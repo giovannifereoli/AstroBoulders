@@ -82,7 +82,7 @@ def plot_asteroid_3d(asteroid, disc=10, ax=None, Trajectory=None):
     obj_file = asteroid.model
     _, file_extension = os.path.splitext(obj_file)
     mesh = trimesh.load_mesh(obj_file, file_type=file_extension[1:])
-    vertices = np.array(mesh.vertices * disc) * 100
+    vertices = np.array(mesh.vertices * disc) * 100  # TODO: what's that??
     faces = mesh.faces
 
     if ax is None:

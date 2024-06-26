@@ -5,7 +5,7 @@ from scipy.spatial import ConvexHull
 from GravModels.Models.Mascon import Mascon
 from GravModels.Models.Polyhedral import Polyhedral
 from GravModels.Models.Pines import Pines
-from GravModels.CelestialBodies.Asteroids import Didymos
+from GravModels.CelestialBodies.Asteroids import Itokawa
 from GravModels.utils.Plotting import plot_acceleration_contours
 from GravModels.utils.Utils import compute_acceleration_grid
 
@@ -154,7 +154,7 @@ def plot_all_contours(
 
 
 def main():
-    asteroid = Didymos()
+    asteroid = Itokawa()
     num = 10
 
     feature_x = np.linspace(-2000, 2000, num)

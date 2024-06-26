@@ -52,3 +52,20 @@ class Bennu(Asteroid):
             volume=63255149.177708544,
             shape_model="../Files/ShapeModels/Bennu/Bennu_shape_model.obj",
         )
+
+
+class Itokawa(Asteroid):
+    def __init__(self):
+        mean_diameter = 0.330  # km
+        min_extent = 0.209  # km
+        density = 1.673 * 1000  # convert g/cm³ to kg/m³
+        volume = 3.147e10 / density  # mass / density
+
+        super().__init__(
+            "ITOKAWA_BARYCENTER",
+            radius=mean_diameter / 2 * 1000,  # convert km to meters
+            min_radius=min_extent * 1000 / 2,  # convert km to meters and use as radius
+            density=density,  # kg/m³
+            volume=volume,  # m³
+            shape_model="../Files/ShapeModels/Itokawa/Itokawa_shape_model_50k.obj",
+        )
