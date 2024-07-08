@@ -48,7 +48,7 @@ if __name__ == "__main__":
     trajectory = solution.y.T
 
     # Create an instance of the MeasurementModel class
-    measurement_model = MeasurementModel(asteroid, t_eval)
+    measurement_model = RadioMetricModels(asteroid, t_eval)
 
     # Process the trajectory to get the measurements
     measurements = measurement_model.process_trajectory(trajectory)

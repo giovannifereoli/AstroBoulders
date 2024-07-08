@@ -159,3 +159,203 @@ def plot_range_and_range_rate(t_eval, measurements):
 
     plt.tight_layout()
     plt.show()
+
+
+def plot_trajectory_errors(
+    t_eval,
+    solution_true,
+    filtered_state,
+    covariance,
+    initial_state_true,
+    filename="ErrorsPosVel.pdf",
+):
+    """
+    Plots the trajectory errors between the true trajectory and the estimated trajectory.
+
+    Parameters:
+    - t_eval (array-like): The time points at which the trajectory is evaluated.
+    - solution_true (array-like): The true trajectory.
+    - filtered_state (array-like): The estimated trajectory.
+    - covariance (array-like): The covariance matrix of the estimated trajectory.
+    - initial_state_true (array-like): The initial state of the true trajectory.
+    - filename (str): The filename to save the plot (default is "ErrorsPosVel.pdf").
+
+    Returns:
+    None
+    """
+    # Calculate error between true trajectory and estimated trajectory
+    error_rv = solution_true.y[:, :-1] - filtered_state[:6, :]
+
+    # Calculate 3-sigma bound for error
+    sigma_bound = 3 * np.sqrt(np.abs(np.diagonal(covariance, axis1=0, axis2=1)))
+
+    fig, axs = plt.subplots(2, 3, figsize=(18, 6))
+    plt.subplots_adjust(wspace=1, hspace=1)
+
+    labels = [
+        r"$\varepsilon_x$ [n.d.]",
+        r"$\varepsilon_y$ [n.d.]",
+        r"$\varepsilon_z$ [n.d.]",
+        r"$\varepsilon_{\dot{x}}$ [n.d.]",
+        r"$\varepsilon_{\dot{y}}$ [n.d.]",
+        r"$\varepsilon_{\dot{z}}$ [n.d.]",
+    ]
+
+    for i in range(len(initial_state_true)):
+        row_index, col_index = divmod(i, 3)
+        axs[row_index, col_index].semilogy(
+            t_eval[:-1],
+            np.abs(error_rv[i]),
+            linestyle="-",
+            color="red",
+            label=r"$\varepsilon$",
+        )
+        axs[row_index, col_index].semilogy(
+            t_eval[:-1],
+            sigma_bound[i],
+            linestyle="--",
+            color="black",
+            label="3$\sigma$",
+        )
+        axs[row_index, col_index].set_ylabel(labels[i])
+        axs[row_index, col_index].set_xlabel(r"t [n.d.]")
+        axs[row_index, col_index].legend(loc="lower left")
+        axs[row_index, col_index].grid(True, which="both", linestyle="--", alpha=0.2)
+
+    plt.tight_layout()
+    plt.savefig(filename, format="pdf")
+    plt.show()
+
+
+def plot_residual_dynamics_errors(
+    t_eval,
+    resdyn_true,
+    filtered_state,
+    covariance,
+    initial_state_true,
+    filename="ErrorsResDyn.pdf",
+):
+    """
+    Plots the error between true residual dynamics and estimated residual dynamics.
+
+    Parameters:
+    - t_eval (array-like): The time values for evaluation.
+    - resdyn_true (array-like): The true residual dynamics.
+    - filtered_state (array-like): The estimated residual dynamics.
+    - covariance (array-like): The covariance matrix.
+    - initial_state_true (array-like): The initial true state.
+    - filename (str): The filename to save the plot (default is "ErrorsResDyn.pdf").
+
+    Returns:
+    None
+    """
+    # Calculate error between true residual dynamics and estimated residual dynamics
+    error_resdyn = resdyn_true.T[3:, :] - filtered_state[6:, :]
+
+    # Calculate 3-sigma bound for error
+    sigma_bound = 3 * np.sqrt(np.abs(np.diagonal(covariance, axis1=0, axis2=1)))
+
+    fig, axs = plt.subplots(3, 1, figsize=(8, 6))
+    plt.subplots_adjust(wspace=1, hspace=1)
+
+    labels = [
+        r"$\varepsilon_{w_x}$ [n.d.]",
+        r"$\varepsilon_{w_y}$ [n.d.]",
+        r"$\varepsilon_{w_z}$ [n.d.]",
+    ]
+
+    for i in range(3):
+        axs[i].semilogy(
+            t_eval[:-1],
+            np.abs(error_resdyn[i]),
+            linestyle="-",
+            color="blue",
+            label=r"$\varepsilon$",
+        )
+        axs[i].semilogy(
+            t_eval[:-1],
+            sigma_bound[len(initial_state_true) + i],
+            linestyle="--",
+            color="black",
+            label="3$\sigma$",
+        )
+        axs[i].set_ylabel(labels[i])
+        axs[i].set_xlabel(r"t [n.d.]")
+        axs[i].legend(loc="upper right")
+        axs[i].grid(True, which="both", linestyle="--", alpha=0.2)
+
+    plt.tight_layout()
+    plt.savefig(filename, format="pdf")
+    plt.show()
+
+
+def plot_postfit_radiometric_errors(
+    t_eval,
+    measurements_true,
+    filtered_state,
+    measurement_model,
+    sigma_range,
+    sigma_range_rate,
+    filename="PostfitRadiometricErrors.pdf",
+):
+    """
+    Plots the postfit radiometric measurement errors for a given set of measurements.
+
+    Parameters:
+    - t_eval (array-like): The time values at which the measurements are evaluated.
+    - measurements_true (array-like): The true measurements.
+    - filtered_state (array-like): The filtered state estimates.
+    - measurement_model (object): The measurement model used to calculate estimated measurements.
+    - sigma_range (float): The standard deviation of the range measurement errors.
+    - sigma_range_rate (float): The standard deviation of the range rate measurement errors.
+    - filename (str): The name of the output file to save the plot (default is "PostfitMeasurementErrors.pdf").
+
+    Returns:
+    None
+    """
+    # Calculate postfit errors in measurements
+    postfit_errors = []
+    for i in range(len(t_eval) - 1):
+        estimated_measurement = measurement_model.get_measurements(
+            filtered_state[:3, i], filtered_state[3:6, i], 0, 0
+        )
+        true_measurement = measurements_true[i]
+        postfit_error = true_measurement - estimated_measurement
+        postfit_errors.append(postfit_error)
+
+    postfit_errors = np.array(postfit_errors).T
+
+    # Calculate 3-sigma bound for measurement errors
+    sigma_bound = np.array([3 * sigma_range, 3 * sigma_range_rate])
+
+    fig, axs = plt.subplots(2, 1, figsize=(8, 6))
+    plt.subplots_adjust(hspace=0.5)
+
+    labels = [
+        r"$\varepsilon_{\text{range}}$ [n.d.]",
+        r"$\varepsilon_{\text{range rate}}$ [n.d.]",
+    ]
+
+    for i in range(2):
+        axs[i].semilogy(
+            t_eval[:-1],
+            np.abs(postfit_errors[i]),
+            linestyle="-",
+            color="blue",
+            label=r"$\varepsilon$",
+        )
+        axs[i].semilogy(
+            t_eval[:-1],
+            sigma_bound[i],
+            linestyle="--",
+            color="black",
+            label="3$\sigma$",
+        )
+        axs[i].set_ylabel(labels[i])
+        axs[i].set_xlabel(r"t [n.d.]")
+        axs[i].legend(loc="upper right")
+        axs[i].grid(True, which="both", linestyle="--", alpha=0.2)
+
+    plt.tight_layout()
+    plt.savefig(filename, format="pdf")
+    plt.show()
