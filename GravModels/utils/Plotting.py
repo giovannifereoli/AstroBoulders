@@ -166,7 +166,6 @@ def plot_trajectory_errors(
     solution_true,
     filtered_state,
     covariance,
-    initial_state_true,
     filename="ErrorsPosVel.pdf",
 ):
     """
@@ -177,48 +176,48 @@ def plot_trajectory_errors(
     - solution_true (array-like): The true trajectory.
     - filtered_state (array-like): The estimated trajectory.
     - covariance (array-like): The covariance matrix of the estimated trajectory.
-    - initial_state_true (array-like): The initial state of the true trajectory.
     - filename (str): The filename to save the plot (default is "ErrorsPosVel.pdf").
 
     Returns:
     None
     """
     # Calculate error between true trajectory and estimated trajectory
-    error_rv = solution_true.y[:, :-1] - filtered_state[:6, :]
+    error_rv = solution_true[1:, :].T - filtered_state[:6, :]
 
     # Calculate 3-sigma bound for error
-    sigma_bound = 3 * np.sqrt(np.abs(np.diagonal(covariance, axis1=0, axis2=1)))
+    sigma_bound = (3 * np.sqrt(np.abs(np.diagonal(covariance, axis1=0, axis2=1)))).T
 
-    fig, axs = plt.subplots(2, 3, figsize=(18, 6))
+    # Plot thge errors
+    _, axs = plt.subplots(2, 3, figsize=(18, 6))
     plt.subplots_adjust(wspace=1, hspace=1)
 
     labels = [
-        r"$\varepsilon_x$ [n.d.]",
-        r"$\varepsilon_y$ [n.d.]",
-        r"$\varepsilon_z$ [n.d.]",
-        r"$\varepsilon_{\dot{x}}$ [n.d.]",
-        r"$\varepsilon_{\dot{y}}$ [n.d.]",
-        r"$\varepsilon_{\dot{z}}$ [n.d.]",
+        r"$\varepsilon_x$ [km]",
+        r"$\varepsilon_y$ [km]",
+        r"$\varepsilon_z$ [km]",
+        r"$\varepsilon_{\dot{x}}$ [km/s]",
+        r"$\varepsilon_{\dot{y}}$ [km/s]",
+        r"$\varepsilon_{\dot{z}}$ [km/s]",
     ]
 
-    for i in range(len(initial_state_true)):
+    for i in range(len(solution_true[1, :])):
         row_index, col_index = divmod(i, 3)
         axs[row_index, col_index].semilogy(
-            t_eval[:-1],
+            t_eval[1:],
             np.abs(error_rv[i]),
             linestyle="-",
             color="red",
             label=r"$\varepsilon$",
         )
         axs[row_index, col_index].semilogy(
-            t_eval[:-1],
-            sigma_bound[i],
+            t_eval[1:],
+            sigma_bound[i, :],
             linestyle="--",
             color="black",
-            label="3$\sigma$",
+            label=r"3$\sigma$",
         )
         axs[row_index, col_index].set_ylabel(labels[i])
-        axs[row_index, col_index].set_xlabel(r"t [n.d.]")
+        axs[row_index, col_index].set_xlabel(r"t [s]")
         axs[row_index, col_index].legend(loc="lower left")
         axs[row_index, col_index].grid(True, which="both", linestyle="--", alpha=0.2)
 
@@ -232,7 +231,6 @@ def plot_residual_dynamics_errors(
     resdyn_true,
     filtered_state,
     covariance,
-    initial_state_true,
     filename="ErrorsResDyn.pdf",
 ):
     """
@@ -243,25 +241,24 @@ def plot_residual_dynamics_errors(
     - resdyn_true (array-like): The true residual dynamics.
     - filtered_state (array-like): The estimated residual dynamics.
     - covariance (array-like): The covariance matrix.
-    - initial_state_true (array-like): The initial true state.
     - filename (str): The filename to save the plot (default is "ErrorsResDyn.pdf").
 
     Returns:
     None
     """
     # Calculate error between true residual dynamics and estimated residual dynamics
-    error_resdyn = resdyn_true.T[3:, :] - filtered_state[6:, :]
+    error_resdyn = resdyn_true[3:, :] - filtered_state[6:, :]
 
     # Calculate 3-sigma bound for error
     sigma_bound = 3 * np.sqrt(np.abs(np.diagonal(covariance, axis1=0, axis2=1)))
 
-    fig, axs = plt.subplots(3, 1, figsize=(8, 6))
+    _, axs = plt.subplots(3, 1, figsize=(8, 6))
     plt.subplots_adjust(wspace=1, hspace=1)
 
     labels = [
-        r"$\varepsilon_{w_x}$ [n.d.]",
-        r"$\varepsilon_{w_y}$ [n.d.]",
-        r"$\varepsilon_{w_z}$ [n.d.]",
+        r"$\varepsilon_{w_x}$ [km/s^2]",
+        r"$\varepsilon_{w_y}$ [km/s^2]",
+        r"$\varepsilon_{w_z}$ [km/s^2]",
     ]
 
     for i in range(3):
@@ -274,13 +271,13 @@ def plot_residual_dynamics_errors(
         )
         axs[i].semilogy(
             t_eval[:-1],
-            sigma_bound[len(initial_state_true) + i],
+            sigma_bound[6 + i],
             linestyle="--",
             color="black",
-            label="3$\sigma$",
+            label=r"3$\sigma$",
         )
         axs[i].set_ylabel(labels[i])
-        axs[i].set_xlabel(r"t [n.d.]")
+        axs[i].set_xlabel(r"t [s]")
         axs[i].legend(loc="upper right")
         axs[i].grid(True, which="both", linestyle="--", alpha=0.2)
 
@@ -317,23 +314,30 @@ def plot_postfit_radiometric_errors(
     postfit_errors = []
     for i in range(len(t_eval) - 1):
         estimated_measurement = measurement_model.get_measurements(
-            filtered_state[:3, i], filtered_state[3:6, i], 0, 0
+            filtered_state[:3, i],
+            filtered_state[3:6, i],
+            i + 1,
+            sigma_range,
+            sigma_range_rate,
         )
-        true_measurement = measurements_true[i]
-        postfit_error = true_measurement - estimated_measurement
+        true_measurement = measurements_true[i + 1]
+        postfit_error = np.abs(
+            np.array(true_measurement) - np.array(estimated_measurement)
+        )
         postfit_errors.append(postfit_error)
-
     postfit_errors = np.array(postfit_errors).T
 
     # Calculate 3-sigma bound for measurement errors
-    sigma_bound = np.array([3 * sigma_range, 3 * sigma_range_rate])
+    sigma_bound = np.tile(
+        np.array([3 * sigma_range, 3 * sigma_range_rate]), (len(t_eval) - 1, 1)
+    )
 
     fig, axs = plt.subplots(2, 1, figsize=(8, 6))
     plt.subplots_adjust(hspace=0.5)
 
     labels = [
-        r"$\varepsilon_{\text{range}}$ [n.d.]",
-        r"$\varepsilon_{\text{range rate}}$ [n.d.]",
+        r"$\varepsilon_{\text{range}}$ [km]",
+        r"$\varepsilon_{\text{range rate}}$ [km/s]",
     ]
 
     for i in range(2):
@@ -346,13 +350,13 @@ def plot_postfit_radiometric_errors(
         )
         axs[i].semilogy(
             t_eval[:-1],
-            sigma_bound[i],
+            sigma_bound[:, i],
             linestyle="--",
             color="black",
-            label="3$\sigma$",
+            label=r"3$\sigma$",
         )
         axs[i].set_ylabel(labels[i])
-        axs[i].set_xlabel(r"t [n.d.]")
+        axs[i].set_xlabel(r"t [s]")
         axs[i].legend(loc="upper right")
         axs[i].grid(True, which="both", linestyle="--", alpha=0.2)
 

@@ -76,8 +76,7 @@ class PointMass:
         x, y, z, vx, vy, vz = y[:6]
 
         r = np.array([[x, y, z]])
-        a = self.calculate_acceleration(r)
-        ax, ay, az = a[0]
+        ax, ay, az = self.calculate_acceleration(r)
 
         A = self.jacobian(t, np.array([x, y, z, vx, vy, vz]))
         d_stm = np.dot(A, stm)

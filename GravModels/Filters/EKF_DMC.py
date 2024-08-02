@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 
+# TODO: add number of pred/corr steps for measurement model
+
 
 class ExtendedKalmanFilterDMC:
     def __init__(

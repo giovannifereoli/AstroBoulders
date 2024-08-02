@@ -1,6 +1,9 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 
+# TODO: add NIS test for consistency
+# TODO: add covariance analysis possibility
+
 
 class ExtendedKalmanFilterSNC:
     def __init__(self, dynamicalModel, measurementModel, Q, R, x0, P0, SNC_flag=True):
@@ -15,6 +18,8 @@ class ExtendedKalmanFilterSNC:
             x0: The initial state estimate.
             P0: The initial state covariance matrix.
             SNC_flag: A flag indicating whether to use SNC algorithm (default is True).
+            prediction_step: The number of prediction steps.
+            correction_step: The number of correction steps.
         """
         self.dynamicalModel = dynamicalModel
         self.measurementModel = measurementModel
@@ -24,6 +29,8 @@ class ExtendedKalmanFilterSNC:
         self.P = P0
         self.SNC_flag = SNC_flag
         self.n = len(x0)
+        self.prediction_step = 0
+        self.correction_step = 0
 
     def predict(self, dt):
         """
@@ -35,6 +42,7 @@ class ExtendedKalmanFilterSNC:
         Returns:
             None
         """
+        self.prediction_step += 1
         self._integrate_dynamics_and_stm(dt)
         Q_snc = self._compute_process_noise_covariance(dt)
         self._predict_covariance(Q_snc)
@@ -49,6 +57,7 @@ class ExtendedKalmanFilterSNC:
         Returns:
             None
         """
+        self.correction_step += 1
         H = self._compute_measurement_jacobian()
         K = self._compute_kalman_gain(H)
         self._update_state_estimate(z, K)
@@ -120,7 +129,9 @@ class ExtendedKalmanFilterSNC:
         Returns:
             numpy.ndarray: The measurement Jacobian matrix.
         """
-        return self.measurementModel.jacobian(self.x[:3], self.x[3:6])
+        return self.measurementModel.jacobian(
+            self.x[:3], self.x[3:6], self.correction_step
+        )
 
     def _compute_kalman_gain(self, H):
         """
@@ -149,8 +160,14 @@ class ExtendedKalmanFilterSNC:
         Returns:
         None
         """
-        y = z - self.measurementModel.get_measurements(
-            self.x[:3], self.x[3:6], np.sqrt(self.R[0, 0]), np.sqrt(self.R[1, 1])
+        y = np.array(z) - np.array(
+            self.measurementModel.get_measurements(
+                self.x[:3],
+                self.x[3:6],
+                self.correction_step,
+                np.sqrt(self.R[0, 0]),
+                np.sqrt(self.R[1, 1]),
+            )
         )
         self.x = self.x + np.dot(K, y)
 

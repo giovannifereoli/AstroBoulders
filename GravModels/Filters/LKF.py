@@ -1,5 +1,7 @@
 import numpy as np
 
+# TODO: add number of pred/corr steps for measurement model
+
 
 class LinearizedKalmanFilter:
     def __init__(self, Q, R, dx0, P0):

@@ -1,5 +1,7 @@
 import numpy as np
 
+# TODO: add number of pred/corr steps for measurement model
+
 
 class MinimumVarianceBatchFilter:
     def __init__(self, Q, R, x0, P0):

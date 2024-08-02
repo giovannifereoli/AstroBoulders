@@ -90,8 +90,7 @@ class RadioMetricModels:
         self,
         pos_sc,
         vel_sc,
-        pos_asteroid,
-        vel_asteroid,
+        epoch_idx,
         sigma_range=0,
         sigma_range_rate=0,
     ):
@@ -109,6 +108,8 @@ class RadioMetricModels:
         Returns:
         - measurements: A tuple containing the range and range rate.
         """
+        pos_asteroid = self.pos_asteroid[epoch_idx]
+        vel_asteroid = self.vel_asteroid[epoch_idx]
         range_measurement = self.compute_range(pos_sc, pos_asteroid)
         range_rate_measurement = self.compute_range_rate(
             pos_sc, vel_sc, pos_asteroid, vel_asteroid
@@ -122,7 +123,7 @@ class RadioMetricModels:
 
         return range_measurement, range_rate_measurement
 
-    def jacobian(self, pos_sc, vel_sc, pos_asteroid, vel_asteroid):
+    def jacobian(self, pos_sc, vel_sc, epoch_idx):
         """
         Compute the Jacobian matrix of the range and range rate measurements.
 
@@ -135,6 +136,8 @@ class RadioMetricModels:
         Returns:
         - H: The Jacobian matrix.
         """
+        pos_asteroid = self.pos_asteroid[epoch_idx]
+        vel_asteroid = self.vel_asteroid[epoch_idx]
         pos_sc_earth = pos_asteroid + np.array(pos_sc)
         vel_sc_earth = vel_asteroid + np.array(vel_sc)
         range_ = np.linalg.norm(pos_sc_earth)
@@ -166,13 +169,11 @@ class RadioMetricModels:
         for i in range(len(trajectory)):
             pos_sc = trajectory[i, :3]
             vel_sc = trajectory[i, 3:]
-            pos_asteroid = self.pos_asteroid[i]
-            vel_asteroid = self.vel_asteroid[i]
+            epoch_idx = i
             range_measurement, range_rate_measurement = self.get_measurements(
                 pos_sc,
                 vel_sc,
-                pos_asteroid,
-                vel_asteroid,
+                epoch_idx,
                 sigma_range,
                 sigma_range_rate,
             )
