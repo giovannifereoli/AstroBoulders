@@ -18,12 +18,12 @@ spice.furnsh("Kernels/didymos_hor_200101_300101_v01.bsp")  # SPICE kernel for Di
 spice.furnsh("Kernels/naif0012.tls")  # Leap seconds kernel
 
 # Define initial conditions for the spacecraft
-initial_position = np.array([700, 10, 10])
-initial_velocity = np.array([0.1, 0.25, 0.1])  # initial velocity in km/s
+initial_position = np.array([700, 0, 0])
+initial_velocity = np.array([0.1, 0, 0])  # initial velocity in km/s
 
 # Define time span for the integration
 et = spice.str2et("2028-Jan-04 12:00:00")
-t_span = (et, et + 60 * 60 * 24 * 7)  # simulate for one week
+t_span = (et, et + 60 * 60 * 24 * 1)  # simulate for one day
 t_eval = np.linspace(t_span[0], t_span[1], 1000)
 
 # Create an instance of the Propagator class with different models

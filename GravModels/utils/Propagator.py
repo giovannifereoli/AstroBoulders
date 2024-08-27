@@ -17,6 +17,7 @@ class Propagator:
         model_type="Pines",
     ):
         self.asteroid = asteroid
+        self.w = np.array([0, 0, asteroid.w])
         self.initial_conditions = np.hstack((initial_position, initial_velocity))
         self.t_span = t_span
         self.t_eval = t_eval
@@ -36,12 +37,21 @@ class Propagator:
             raise ValueError(f"Unknown model type: {self.model_type}")
 
     def equations_of_motion(self, t, y):
+        # Extract position and velocity
         pos = y[:3]
-        vel = y[3:]
-        acc = self.model.calculate_acceleration(np.array([pos]))
+        vel = y[3:6]
+
+        # Fictitious forces
+        a_cor = -2 * np.cross(self.w, vel)
+        a_cent = -np.cross(self.w, np.cross(self.w, pos))
+
+        # Calculate acceleration
+        # HP: asteroid body frame acceleration
+        acc = self.model.calculate_acceleration(np.array([pos])) + a_cor + a_cent
         if acc.ndim == 2:
             acc = acc[0]
         dydt = np.hstack((vel, acc))
+
         return dydt
 
     def propagate(self):
